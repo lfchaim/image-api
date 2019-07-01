@@ -1,0 +1,47 @@
+package br.com.whs.imageapi.util;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class FileUtil {
+
+	public static String readFile(String fileName) {
+		StringBuffer ret = null;
+		BufferedReader br = null;
+		FileReader fr = null;
+		try {
+			fr = new FileReader(fileName);
+			br = new BufferedReader(fr);
+			// read line by line
+			String line;
+			while ((line = br.readLine()) != null) {
+				if( ret == null )
+					ret = new StringBuffer();
+				ret.append(line);
+			}
+
+		} catch (IOException e) {
+			System.err.format("IOException: %s%n", e);
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+				if (fr != null)
+					fr.close();
+			} catch (IOException ex) {
+				System.err.format("IOException: %s%n", ex);
+			}
+		}
+
+		return ret.toString();
+	}
+	
+	public static String getExtension( String fileName ) {
+		if( fileName != null ) {
+			return fileName.substring(fileName.lastIndexOf(".")+1);
+		} else {
+			return null;
+		}
+	}
+}
