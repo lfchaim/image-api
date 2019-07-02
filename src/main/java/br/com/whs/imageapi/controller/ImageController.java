@@ -22,13 +22,17 @@ import br.com.whs.imageapi.model.request.ImageRequest;
 import br.com.whs.imageapi.util.Base64Util;
 import br.com.whs.imageapi.util.FileUtil;
 import br.com.whs.imageapi.util.ImageUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("image")
+@RequestMapping("/api/v1/image")
+@Api(value = "Image", description = "API para tratamento de imagens")
 public class ImageController {
 	
 	@PostMapping(path = "/info")
+	@ApiOperation(value = "Obtém informações da imagem Base64")
 	public Mono<Map<String,Object>> postInfo(@RequestBody ImageRequest imageRequest) {
 		Map<String,Object> map = new LinkedHashMap<String,Object>();
 		String dir = System.getProperty("java.io.tmpdir");
@@ -63,6 +67,7 @@ public class ImageController {
 	}
 	
 	@PostMapping(path = "/resize")
+	@ApiOperation(value = "Redimensiona uma imagem Base64. Para aumentar 20%, o ratio deve ser 1.2")
 	public Mono<Map<String,String>> postResize(@RequestBody ImageRequest imageRequest, @RequestParam Float ratio) {
 		Map<String,String> map = new LinkedHashMap<String,String>();
 		String dir = System.getProperty("java.io.tmpdir");
@@ -89,6 +94,7 @@ public class ImageController {
 	}
 	
 	@PostMapping(path = "/grayscale")
+	@ApiOperation(value = "Converte uma imagem Base64 em Grayscale - Tons de cinza")
 	public Mono<Map<String,String>> postGray(@RequestBody ImageRequest imageRequest) {
 		Map<String,String> map = new LinkedHashMap<String,String>();
 		String dir = System.getProperty("java.io.tmpdir");
