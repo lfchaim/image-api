@@ -1,5 +1,5 @@
-# image-api
-Image API  
+# Image API
+Image API é um projeto de demonstração de tratamento de imagens.  
 
 ## Baixando o projeto
 $ git clone https://github.com/lfchaim/image-api  
@@ -49,3 +49,11 @@ Response
 }
 ```
 
+## Referências
+[Spring Framework](https://spring.io)  
+[Spring Boot](https://spring.io/projects/spring-boot)  
+[SpringFox](https://springfox.github.io/springfox)  
+[Spring Webflux](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html)  
+
+[Spring Actuator](https://spring.io/guides/gs/actuator-service)  
+[Apache Commons Imaging](https://commons.apache.org/proper/commons-imaging/)  
