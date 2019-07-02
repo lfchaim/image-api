@@ -1,7 +1,10 @@
 package br.com.whs.imageapi.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class FileUtil {
@@ -35,6 +38,25 @@ public class FileUtil {
 		}
 
 		return ret.toString();
+	}
+	
+	public static boolean writeFile( String path, String fileName, String content ) {
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+		boolean ret = false;
+		try {
+			fw = new FileWriter(new File(path,fileName));
+			bw = new BufferedWriter(fw);
+			bw.write(content);
+			bw.flush();
+			ret = true;
+		} catch (Exception e) {
+			// TODO: handle exception
+		} finally {
+			try {bw.close();}catch(Exception e) {}
+			try {fw.close();}catch(Exception e) {}
+		}
+		return ret;
 	}
 	
 	public static String getExtension( String fileName ) {

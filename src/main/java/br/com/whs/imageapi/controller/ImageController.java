@@ -70,7 +70,7 @@ public class ImageController {
 	}
 	
 	@PostMapping(path = "/grayscale")
-	public Mono<Map<String,String>> postGray(@RequestBody ImageRequest imageRequest, @RequestParam Float ratio) {
+	public Mono<Map<String,String>> postGray(@RequestBody ImageRequest imageRequest) {
 		Map<String,String> map = new LinkedHashMap<String,String>();
 		String dir = System.getProperty("java.io.tmpdir");
 		File file = new File(dir+System.getProperty("file.separator")+imageRequest.getFileName());
@@ -84,7 +84,6 @@ public class ImageController {
 			String data = Base64Util.encodeFileToBase64Binary(newImage);
 			
 			map.put("data", data);
-			map.put("ratio", ratio.toString());
 			map.put("fileName", imageRequest.getFileName());
 		}catch( Exception e ) {
 			e.printStackTrace();
