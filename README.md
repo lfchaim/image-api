@@ -50,10 +50,9 @@ Response
 ```
 
 ## Referências
-[Spring Framework](https://spring.io)  
-[Spring Boot](https://spring.io/projects/spring-boot)  
-[SpringFox](https://springfox.github.io/springfox)  
-[Spring Webflux](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html)  
-
-[Spring Actuator](https://spring.io/guides/gs/actuator-service)  
-[Apache Commons Imaging](https://commons.apache.org/proper/commons-imaging/)  
+[Spring Framework](https://spring.io)
+[Spring Boot](https://spring.io/projects/spring-boot)
+[SpringFox](https://springfox.github.io/springfox)
+[Spring Webflux](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html)
+[Spring Actuator](https://spring.io/guides/gs/actuator-service)
+[Apache Commons Imaging](https://commons.apache.org/proper/commons-imaging/)
