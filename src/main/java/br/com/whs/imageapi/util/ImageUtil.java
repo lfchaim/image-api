@@ -8,7 +8,17 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.ImageOutputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.imgscalr.Scalr;
+import org.w3c.dom.Element;
 
 public class ImageUtil {
 
@@ -256,6 +266,59 @@ public class ImageUtil {
             }
         }
         return result;
+	}
+	
+	public static File optimize(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
+	    long start = System.currentTimeMillis();
+	    File outputFile = File.createTempFile("pdfimage", ".jpeg");
+	    outputFile.deleteOnExit();
+	    try {
+	        int relevantDelta = 20;
+	        boolean isResizeRelevant = Math.abs(bufferedImage.getWidth() - width) > relevantDelta && Math.abs(bufferedImage.getHeight() - height) > relevantDelta;
+	        boolean isShirinking = bufferedImage.getHeight() > height || bufferedImage.getWidth() > width;
+	        if (isResizeRelevant && isShirinking) {
+	            // we resize down, we don't resize up
+	            System.out.println("Resizing image from "+bufferedImage.getWidth()+"x"+bufferedImage.getHeight()+" to "+width+"x"+height);
+	            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.BALANCED, width, height);
+	        }
+	        // PNG read fix when converting to JPEG
+	        BufferedImage newImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), gray ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_INT_RGB);
+	        Graphics2D g2d = newImage.createGraphics();
+	        g2d.drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+	        g2d.dispose();
+	        ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
+	        ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile);
+	        imageWriter.setOutput(ios);
+	        // compression
+	        JPEGImageWriteParam jpegParams = (JPEGImageWriteParam) imageWriter.getDefaultWriteParam();
+	        jpegParams.setCompressionMode(JPEGImageWriteParam.MODE_EXPLICIT);
+	        jpegParams.setCompressionQuality(quality);
+	        IIOMetadata imageMetaData = null;
+	        try {
+	            // new metadata
+	            imageMetaData = imageWriter.getDefaultImageMetadata(new ImageTypeSpecifier(newImage), jpegParams);
+	            Element tree = (Element) imageMetaData.getAsTree("javax_imageio_jpeg_image_1.0");
+	            Element jfif = (Element) tree.getElementsByTagName("app0JFIF").item(0);
+	            jfif.setAttribute("Xdensity", Integer.toString(dpi));
+	            jfif.setAttribute("Ydensity", Integer.toString(dpi));
+	            jfif.setAttribute("resUnits", "1");
+	            imageMetaData.setFromTree("javax_imageio_jpeg_image_1.0", tree);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	        try {
+	            imageWriter.write(null, new IIOImage(newImage, null, imageMetaData), jpegParams);
+	        } finally {
+	            IOUtils.closeQuietly(ios);
+	            imageWriter.dispose();
+	        }
+	        return outputFile;
+	    } finally {
+	        bufferedImage.flush();
+	        long elapsed = System.currentTimeMillis() - start;
+	        if (elapsed > 500)
+	            System.out.println("Optimizing image took " + elapsed + "ms");
+	    }
 	}
 	
 	public static BufferedImage load( File file ) throws IOException {
