@@ -7,13 +7,17 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.commons.imaging.ImageInfo;
@@ -270,7 +274,7 @@ public class ImageUtil {
         return result;
 	}
 	
-	public static String optimizeByFile(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
+	public static String optimizeByFileOLD(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
 	    long start = System.currentTimeMillis();
 	    File outputFile = File.createTempFile("pdfimage", ".jpeg");
 	    outputFile.deleteOnExit();
@@ -337,4 +341,53 @@ public class ImageUtil {
 	    ImageIO.write(bufferedImage, fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase(), outputfile);
 	    return outputfile;
 	}
+	
+	public static String getFormatName( String fileName ) throws IOException {
+		File sourceFile = new File(fileName);
+		ImageInputStream iis = ImageIO.createImageInputStream(sourceFile);
+		Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(iis);
+		ImageReader ir = null;
+		while( imageReaders.hasNext() ) {
+			ir = imageReaders.next();
+		}
+		sourceFile = null;
+		return ir != null ? ir.getFormatName() : null;
+	}
+	
+	public static String optimizeByFile(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
+		File outputFile = File.createTempFile("pdfimage", ".jpeg");
+		/*
+		ImageInputStream iis = ImageIO.createImageInputStream(bufferedImage);
+		Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(iis);
+		ImageReader ir = null;
+		while( imageReaders.hasNext() ) {
+			ir = imageReaders.next();
+			System.out.println("ImageReader: "+ir.getFormatName());
+		}
+		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix(ir.getFormatName().toLowerCase()).next();
+		*/
+		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
+		ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile);
+		imageWriter.setOutput(ios);
+		ImageWriteParam jpegParams = imageWriter.getDefaultWriteParam();
+		
+		jpegParams.setCompressionMode(JPEGImageWriteParam.MODE_EXPLICIT);
+		jpegParams.setCompressionQuality(quality);
+
+		IIOMetadata data = imageWriter.getDefaultImageMetadata(new ImageTypeSpecifier(bufferedImage), jpegParams);
+		Element tree = (Element)data.getAsTree("javax_imageio_jpeg_image_1.0");
+		Element jfif = (Element)tree.getElementsByTagName("app0JFIF").item(0);
+		jfif.setAttribute("Xdensity", Integer.toString(dpi));
+		jfif.setAttribute("Ydensity", Integer.toString(dpi));
+		jfif.setAttribute("resUnits", "1"); // density is dots per inch                 
+		data.mergeTree("javax_imageio_jpeg_image_1.0",tree);
+
+		// Write and clean up
+		imageWriter.write(data, new IIOImage(bufferedImage, null, data), jpegParams);
+		ios.close();
+		imageWriter.dispose();
+		outputFile.deleteOnExit();
+		return outputFile.getAbsolutePath();
+	}
+	
 }
