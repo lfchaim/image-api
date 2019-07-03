@@ -16,6 +16,8 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.apache.commons.imaging.ImageInfo;
+import org.apache.commons.imaging.Imaging;
 import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;
 import org.w3c.dom.Element;
@@ -268,7 +270,7 @@ public class ImageUtil {
         return result;
 	}
 	
-	public static File optimize(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
+	public static String optimizeByFile(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
 	    long start = System.currentTimeMillis();
 	    File outputFile = File.createTempFile("pdfimage", ".jpeg");
 	    outputFile.deleteOnExit();
@@ -312,7 +314,7 @@ public class ImageUtil {
 	            IOUtils.closeQuietly(ios);
 	            imageWriter.dispose();
 	        }
-	        return outputFile;
+	        return outputFile.getAbsolutePath();
 	    } finally {
 	        bufferedImage.flush();
 	        long elapsed = System.currentTimeMillis() - start;
@@ -321,7 +323,18 @@ public class ImageUtil {
 	    }
 	}
 	
+	public static BufferedImage optimize(BufferedImage bufferedImage, float quality, int dpi, int width, int height, boolean gray) throws IOException {
+		File file = new File(optimizeByFile(bufferedImage, quality, dpi, width, height, gray));
+		return load(file);
+	}
+	
 	public static BufferedImage load( File file ) throws IOException {
 		return ImageIO.read(file);
+	}
+	
+	public static File write(BufferedImage bufferedImage, String fileName) throws IOException {
+		File outputfile = new File(fileName);
+	    ImageIO.write(bufferedImage, fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase(), outputfile);
+	    return outputfile;
 	}
 }
